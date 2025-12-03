@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Hash, Lock, Users, Settings } from 'lucide-react';
-
+import MessageList from './MessageList';
+import { MessageInput } from './MessageInput';
+import { ChannelMembers } from './ChannelMembers';
 const PAGE_SIZE = 50;
 export default function ChatArea({ channel }) {
     const [messages, setMessages] = useState([]);
@@ -8,19 +10,53 @@ export default function ChatArea({ channel }) {
     const [profiles, setProfiles] = useState({})
     const [showMembers, setShowMembers] = useState(false);
     const [memberCount, setMemberCount] = useState(0);
-
+    const [loading,setLoading]=useState(false)
+    useEffect(() => {
+        if (channel?.name === 'channel2') {
+            setMessages([
+                { 
+                    id: 1, 
+                    content: 'heelo', 
+                    sender: { username: 'johndoe', avatarColor: 'bg-blue-600' }, 
+                    timestamp: '1764753480',
+                    isOwn: true 
+                },
+                { 
+                    id: 2, 
+                    content: 'hello', 
+                    sender: { username: 'johndoe2', avatarColor: 'bg-zinc-700' }, 
+                    timestamp: '1764754080',
+                    isOwn: false 
+                }
+            ]);
+        } else {
+            setMessages([]);
+        }
+    }, [channel]);
     const fetchProfiles = async () => {
         alert('profies fetched successfully');
     }
-    const fetchMessage = async () => {
+    const fetchMessages = async () => {
         alert('message fetched successfuly');
     }
     const fetchMemberCount = async () => {
         alert('member count fetched successfully');
     }
-    const handleSendMessage = async () => {
-        alert('Message sent successfully');
+    const handleSendMessage = (text) => {
+        const newMessage = {
+            id: messages.length + 1,
+            content: text,
+            sender: { username: 'johndoe', avatarColor: 'bg-blue-600' },
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            isOwn: true
+        };
+        setMessages([...messages, newMessage]);
+    };
+    const handleLoadMore = () => {
+    if (!loading && hasMore) {
+      fetchMessages(messages.length);
     }
+  };
 
     if (!channel) {
         return (

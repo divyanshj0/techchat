@@ -3,12 +3,15 @@ import { useState } from 'react';
 import { Hash, Lock, Plus, Users, LogOut, Settings } from 'lucide-react';
 import * as ScrollArea from "@radix-ui/react-scroll-area";
 import CreateChannel from './CreateChannel';
+import { useRouter } from 'next/navigation';
+import * as Avatar from '@radix-ui/react-avatar';
 export default function ChannelSidebar({ channels, activeChannel, onSelectChannel, onlineUsers }) {
     const [showCreateChannel, setShowCreateChannel] = useState(false);
     const publicChannels = channels.filter(c => !c.is_private);
     const privateChannels = channels.filter(c => c.is_private);
+    const router=useRouter()
     const handleSignout = async (e) =>{
-
+        router.push('/')
     }
     return (
         <div className="w-64 bg-sidebar flex flex-col border-r border-sidebar-border">
@@ -41,10 +44,7 @@ export default function ChannelSidebar({ channels, activeChannel, onSelectChanne
                             <button
                                 key={channel.id}
                                 onClick={() => onSelectChannel(channel)}
-                                className={cn(
-                                    "channel-item w-full text-left",
-                                    activeChannel?.id === channel.id && "channel-item-active"
-                                )}
+                                className={`channel-item w-full text-left ${activeChannel?.id === channel.id && "channel-item-active"}`}
                             >
                                 <Hash className="h-4 w-4 text-muted-foreground" />
                                 <span className="truncate">{channel.name}</span>
@@ -63,17 +63,12 @@ export default function ChannelSidebar({ channels, activeChannel, onSelectChanne
                         </div>
                         <div className="space-y-1">
                             {privateChannels.map((channel) => (
-                                <button
-                                    key={channel.id}
-                                    onClick={() => onSelectChannel(channel)}
-                                    className={cn(
-                                        "channel-item w-full text-left",
-                                        activeChannel?.id === channel.id && "channel-item-active"
-                                    )}
-                                >
-                                    <Lock className="h-4 w-4 text-muted-foreground" />
-                                    <span className="truncate">{channel.name}</span>
-                                </button>
+                                <button key={channel.id} onClick={() => onSelectChannel(channel)}
+                                className={`channel-item w-full text-left ${activeChannel?.id === channel.id && "channel-item-active"}`}
+                            >
+                                <Hash className="h-4 w-4 text-muted-foreground" />
+                                <span className="truncate">{channel.name}</span>
+                            </button>
                             ))}
                         </div>
                     </div>
@@ -91,11 +86,11 @@ export default function ChannelSidebar({ channels, activeChannel, onSelectChanne
                         {onlineUsers.slice(0, 10).map((user) => (
                             <div key={user.id} className="flex items-center gap-2 px-2 py-1.5">
                                 <div className="relative">
-                                    <Avatar className="h-6 w-6">
-                                        <AvatarFallback className="bg-secondary text-xs">
+                                    <Avatar.Root className="h-6 w-6 relative flex shrink-0 overflow-hidden rounded-full">
+                                        <Avatar.Fallback className="bg-secondary text-xs flex h-full w-full items-center justify-center rounded-full">
                                             {user.username.charAt(0).toUpperCase()}
-                                        </AvatarFallback>
-                                    </Avatar>
+                                        </Avatar.Fallback>
+                                    </Avatar.Root>
                                     <div className="absolute -bottom-0.5 -right-0.5 presence-dot presence-online" />
                                 </div>
                                 <span className="text-sm text-muted-foreground truncate">

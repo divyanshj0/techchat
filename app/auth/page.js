@@ -10,7 +10,7 @@ export default function Auth() {
     const handleLogin=async (e)=>{
         e.preventDefault()
         alert(`sign in using ${loginData.email} and ${loginData.password}`);
-        router.back()
+        router.push('/chats')
     }
     const handleSignup=async (e)=>{
         e.preventDefault()
