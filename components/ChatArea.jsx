@@ -1,62 +1,56 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Hash, Lock, Users, Settings } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Hash, Lock, Users } from 'lucide-react';
 import MessageList from './MessageList';
 import { MessageInput } from './MessageInput';
 import { ChannelMembers } from './ChannelMembers';
-const PAGE_SIZE = 50;
+
 export default function ChatArea({ channel }) {
     const [messages, setMessages] = useState([]);
-    const [hasMore, setHasMore] = useState(true);
-    const [profiles, setProfiles] = useState({})
+    const [profiles, setProfiles] = useState({});
     const [showMembers, setShowMembers] = useState(false);
-    const [memberCount, setMemberCount] = useState(0);
-    const [loading,setLoading]=useState(false)
+    
+
+    // Mock current user
+    const currentUser = { id: 'user1', username: 'johndoe' };
+
     useEffect(() => {
         if (channel?.name === 'channel2') {
+            // 1. Define mock profiles for the users in this chat
+            const mockProfiles = {
+                'user1': { username: 'johndoe', status: 'online' },
+                'user2': { username: 'johndoe2', status: 'online' }
+            };
+            setProfiles(mockProfiles);
+
+            // 2. Set messages with 'created_at' (ISO string) and 'user_id'
             setMessages([
                 { 
                     id: 1, 
                     content: 'heelo', 
-                    sender: { username: 'johndoe', avatarColor: 'bg-blue-600' }, 
-                    timestamp: '1764753480',
-                    isOwn: true 
+                    user_id: 'user1', // Matches currentUser.id (isOwn = true)
+                    created_at: new Date('2025-12-03T14:48:00').toISOString(),
                 },
                 { 
                     id: 2, 
                     content: 'hello', 
-                    sender: { username: 'johndoe2', avatarColor: 'bg-zinc-700' }, 
-                    timestamp: '1764754080',
-                    isOwn: false 
+                    user_id: 'user2', // Different ID (isOwn = false)
+                    created_at: new Date('2025-12-03T15:06:00').toISOString(),
                 }
             ]);
         } else {
             setMessages([]);
         }
     }, [channel]);
-    const fetchProfiles = async () => {
-        alert('profies fetched successfully');
-    }
-    const fetchMessages = async () => {
-        alert('message fetched successfuly');
-    }
-    const fetchMemberCount = async () => {
-        alert('member count fetched successfully');
-    }
+
     const handleSendMessage = (text) => {
         const newMessage = {
             id: messages.length + 1,
             content: text,
-            sender: { username: 'johndoe', avatarColor: 'bg-blue-600' },
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            isOwn: true
+            user_id: currentUser.id,
+            created_at: new Date().toISOString(),
         };
         setMessages([...messages, newMessage]);
     };
-    const handleLoadMore = () => {
-    if (!loading && hasMore) {
-      fetchMessages(messages.length);
-    }
-  };
 
     if (!channel) {
         return (
@@ -94,7 +88,7 @@ export default function ChatArea({ channel }) {
                         onClick={() => setShowMembers(true)}
                     >
                         <Users className="h-4 w-4 mr-2" />
-                        {memberCount}
+                        <span>2</span>
                     </button>
                 </div>
             </div>
@@ -103,9 +97,7 @@ export default function ChatArea({ channel }) {
             <MessageList
                 messages={messages}
                 profiles={profiles}
-                loading={loading}
-                hasMore={hasMore}
-                onLoadMore={handleLoadMore}
+                user={currentUser} 
             />
 
             {/* Message Input */}

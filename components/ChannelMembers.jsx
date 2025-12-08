@@ -3,18 +3,31 @@ import { Shield, ShieldCheck, User } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog'
 import * as ScrollArea from '@radix-ui/react-scroll-area';
 import * as Avatar from '@radix-ui/react-avatar';
+import axios from 'axios';
 export function ChannelMembers({ open, onOpenChange, channel }) {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(false);
-
+  const url = process.env.NEXT_PUBLIC_BACKEND_URL
   useEffect(() => {
     if (open && channel) {
       fetchMembers();
+      setLoading(true);
     }
   }, [open, channel]);
 
   const fetchMembers = async () => {
-    
+    const token = localStorage.getItem('token')
+    console.log(channel.id);
+    try {
+      const members = await axios.get(`${url}/api/members/${channel.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      setMembers(members.data);
+      setLoading(false);
+    }
+    catch (err) {
+      alert(err)
+    }
   };
 
   const getRoleIcon = (role) => {
@@ -48,7 +61,7 @@ export function ChannelMembers({ open, onOpenChange, channel }) {
         <ScrollArea.Root className="max-h-96 relative overflow-hidden">
           <div className="space-y-2">
             {members.map((member) => (
-              <div 
+              <div
                 key={member.id}
                 className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/50 transition-colors "
               >

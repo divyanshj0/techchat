@@ -5,12 +5,14 @@ import * as ScrollArea from "@radix-ui/react-scroll-area";
 import CreateChannel from './CreateChannel';
 import { useRouter } from 'next/navigation';
 import * as Avatar from '@radix-ui/react-avatar';
-export default function ChannelSidebar({ channels, activeChannel, onSelectChannel, onlineUsers }) {
+export default function ChannelSidebar({ channels, activeChannel, onSelectChannel,oncreateChannel }) {
     const [showCreateChannel, setShowCreateChannel] = useState(false);
     const publicChannels = channels.filter(c => !c.is_private);
     const privateChannels = channels.filter(c => c.is_private);
+    const [onlineUsers,setOnlineUsers]=useState([])
     const router=useRouter()
     const handleSignout = async (e) =>{
+        localStorage.clear();
         router.push('/')
     }
     return (
@@ -129,6 +131,7 @@ export default function ChannelSidebar({ channels, activeChannel, onSelectChanne
             <CreateChannel
                 open={showCreateChannel}
                 onOpenChange={setShowCreateChannel}
+                onCreateChannel={oncreateChannel}
             />
         </div>
     )

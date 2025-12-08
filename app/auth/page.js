@@ -1,29 +1,67 @@
 "use client"
-import {useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { MessageSquare, Loader2 } from 'lucide-react';
 import * as Tabs from '@radix-ui/react-tabs';
+import axios from 'axios';
 export default function Auth() {
-    const [loginData, setLoginData] = useState({ email: '', password: '' });
-    const [signupData, setSignupData] = useState({ email: '', password: '', username: '' });
-    const router=useRouter()
-    const handleLogin=async (e)=>{
-        e.preventDefault()
-        alert(`sign in using ${loginData.email} and ${loginData.password}`);
-        router.push('/chats')
+  const [loginData, setLoginData] = useState({ email: '', password: '' });
+  const [signupData, setSignupData] = useState({ email: '', password: '', username: '' });
+  const router = useRouter()
+  const url = process.env.NEXT_PUBLIC_BACKEND_URL
+  const handleLogin = async (e) => {
+    e.preventDefault()
+    try {
+      const res = await axios.post(`${url}/auth/login`, {
+        email: loginData.email,
+        password: loginData.password
+      })
+      const { token, user } = res.data;
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+
+      router.push('/chats');
+    } catch (err) {
+      const status = err.response.status;
+      if (status === 401) {
+        alert("Invalid email or password. Please try again.",status);
+      } else if (status === 404) {
+        alert("User does not exist. Please sign up.",status);
+      } else {
+        alert(`Error: ${message}`);
+      }
     }
-    const handleSignup=async (e)=>{
-        e.preventDefault()
-        alert(`signup using ${signupData.email} and ${signupData.password}`);
-        router.back()
+  }
+  const handleSignup = async (e) => {
+    e.preventDefault()
+    try {
+      const res = await axios.post(`${url}/auth/signup`, {
+        username:signupData.username,
+        email: signupData.email,
+        password: signupData.password
+      })
+      const { token, user } = res.data;
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      alert('user created successfully');
+      router.push('/chats');
+    } catch (err) {
+      const status = err.response.status;
+      console.log(err)
+      if (status === 409) {
+        alert("user already exsist");
+      } else {
+        alert(`Error: ${message}`);
+      }
     }
-    return (
+  }
+  return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-electric-blue/5 rounded-full blur-3xl" />
       </div>
-      
+
       <div className="rounded-lg border text-card-foreground shadow-sm w-full max-w-md bg-card/80 backdrop-blur-xl border-border relative z-10 ">
         <div className="flex flex-col space-y-1.5 p-6 text-center">
           <div className="mx-auto w-16 h-16 rounded-2xl bg-primary flex items-center justify-center mb-4 glow-effect">
@@ -40,7 +78,7 @@ export default function Auth() {
               <Tabs.Trigger value="login" className='inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm'>Sign In</Tabs.Trigger>
               <Tabs.Trigger value="signup" className='inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm'>Sign Up</Tabs.Trigger>
             </Tabs.List>
-            
+
             <Tabs.Content value="login" className='mt-2'>
               <form onSubmit={handleLogin} className="space-y-4 mt-4">
                 <div>
@@ -70,7 +108,7 @@ export default function Auth() {
                 </button>
               </form>
             </Tabs.Content>
-            
+
             <Tabs.Content value="signup" className='mt-2'>
               <form onSubmit={handleSignup} className="space-y-4 mt-4">
                 <div>
@@ -115,5 +153,5 @@ export default function Auth() {
         </div>
       </div>
     </div>
-    )
+  )
 }

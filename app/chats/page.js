@@ -1,33 +1,57 @@
 "use client"
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ChannelSidebar from "@/components/ChannelSidebar";
 import ChatArea from "@/components/ChatArea";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 export default function Chats() {
-    // 1. Initialize with the channels shown in the image
-    const [channels, setChannels] = useState([
-        { id: 'general', name: 'general', is_private: false },
-        { id: 'channel2', name: 'channel2', is_private: false }
-    ])
-    
-    // 2. Set 'channel2' as active by default to match screenshot
-    const [selectedChannel, setSelectedChannel] = useState(channels[1])
-
-    // 3. Mock online users (johndoe and johndoe2)
-    const [onlineUsers, setOnlineUsers] = useState([
-        { id: 1, username: 'johndoe2', status: 'online' },
-        { id: 2, username: 'johndoe', status: 'online' }
-    ])
-    
+    const [channels, setChannels] = useState([])
+    const [selectedChannel, setSelectedChannel] = useState()
+    const [token, setToken] = useState(null)
     const router = useRouter()
+    const url = process.env.NEXT_PUBLIC_BACKEND_URL
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.log(token);
+            alert('session expired');
+            router.replace('/auth');
+        }
+        setToken(token)
+    }, [])
 
+    const fetchChannels = async () => {
+        console.log(token)
+        try {
+            const res = await axios.get(`${url}/api/channels/join`, {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+            setChannels(res.data)
+        }
+        catch (err) {
+            const status = err.response.status;
+            if (status == 401) {
+                alert('Session Expired!');
+                router.replace('/auth');
+                console.log(err.response)
+            }
+            else {
+                alert('Error', err.response.message);
+            }
+        }
+    }
+    useEffect(() => {
+        if (token) {
+            fetchChannels();
+        }
+    }, [token]);
     return (
         <div className="h-screen flex bg-background overflow-hidden">
             <ChannelSidebar
                 channels={channels}
                 activeChannel={selectedChannel}
                 onSelectChannel={setSelectedChannel}
-                onlineUsers={onlineUsers}
+                oncreateChannel={fetchChannels}
             />
             <ChatArea channel={selectedChannel} />
         </div>

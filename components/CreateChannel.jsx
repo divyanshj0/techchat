@@ -1,15 +1,44 @@
 import * as Dialog from '@radix-ui/react-dialog'
 import * as Switch from '@radix-ui/react-switch'
+import axios from 'axios';
 import { X } from 'lucide-react'
-import { useState } from 'react'
-export default function CreateChannel({ open, onOpenChange }) {
+import { useEffect, useState } from 'react'
+export default function CreateChannel({ open, onOpenChange,onCreateChannel}) {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [isPrivate, setIsPrivate] = useState(false);
-
+    const url = process.env.NEXT_PUBLIC_BACKEND_URL
     const handleCreate = async () => {
+        const token = localStorage.getItem('token');
         if (!name.trim()) return;
-        alert(`channel ${name} created successfully`);
+        try {
+            const res = await axios.post(`${url}/api/channels`, {
+                name: name,
+                description: description,
+                is_private: isPrivate,
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+            alert('Channel,created successfully!')
+            onCreateChannel()
+            setName('')
+            setDescription('')
+            setIsPrivate(false)
+            onOpenChange(false);
+            
+        }
+        catch (err) {
+            const status = err.response.status;
+            console.log(status)
+            if (status == 401) {
+                alert('Session Expired!');
+                router.replace('/auth');
+            }
+            else {
+                alert('Error', err.response.message);
+            }
+        }
+
     }
     return (
         <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -55,7 +84,7 @@ export default function CreateChannel({ open, onOpenChange }) {
                             onCheckedChange={setIsPrivate}
                             className='peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors data-[state=checked]:bg-primary data-[state=unchecked]:bg-input focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background'
                         >
-                            <Switch.Thumb className='pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0'/>
+                            <Switch.Thumb className='pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0' />
                         </Switch.Root>
                     </div>
                 </div>
