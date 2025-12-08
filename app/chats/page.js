@@ -13,7 +13,6 @@ export default function Chats() {
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (!token) {
-            console.log(token);
             alert('session expired');
             router.replace('/auth');
         }
@@ -21,7 +20,6 @@ export default function Chats() {
     }, [])
 
     const fetchChannels = async () => {
-        console.log(token)
         try {
             const res = await axios.get(`${url}/api/channels/join`, {
                 headers: { Authorization: `Bearer ${token}` }

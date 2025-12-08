@@ -1,17 +1,28 @@
 "use client";
-import { useState } from 'react';
-import { Hash, Lock, Plus, Users, LogOut, Settings } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Hash, Plus, Users, LogOut, Search } from 'lucide-react';
 import * as ScrollArea from "@radix-ui/react-scroll-area";
 import CreateChannel from './CreateChannel';
 import { useRouter } from 'next/navigation';
 import * as Avatar from '@radix-ui/react-avatar';
-export default function ChannelSidebar({ channels, activeChannel, onSelectChannel,oncreateChannel }) {
+import { ChannelList } from './ChannelList';
+export default function ChannelSidebar({ channels, activeChannel, onSelectChannel, oncreateChannel }) {
     const [showCreateChannel, setShowCreateChannel] = useState(false);
+    const [showChannelList, setShowChannelList] = useState(false);
     const publicChannels = channels.filter(c => !c.is_private);
     const privateChannels = channels.filter(c => c.is_private);
-    const [onlineUsers,setOnlineUsers]=useState([])
-    const router=useRouter()
-    const handleSignout = async (e) =>{
+    const [onlineUsers, setOnlineUsers] = useState([])
+    const [username,setUsername]=useState('')
+    const router = useRouter()
+    useEffect(() => {
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user) {
+            alert('session expired');
+            router.replace('/auth');
+        }
+        setUsername(user.username)
+    }, [])
+    const handleSignout = async (e) => {
         localStorage.clear();
         router.push('/')
     }
@@ -34,12 +45,20 @@ export default function ChannelSidebar({ channels, activeChannel, onSelectChanne
                         <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                             Public Channels
                         </span>
-                        <button
-                            className="h-5 w-5 text-muted-foreground hover:text-foreground hover:bg-accent"
-                            onClick={() => setShowCreateChannel(true)}
-                        >
-                            <Plus className="h-4 w-4" />
-                        </button>
+                        <div className='flex gap-2 items-center'>
+                            <button
+                                className="h-4 w-4 text-muted-foreground hover:scale-125 cursor-pointer"
+                                onClick={() => setShowChannelList(true)}
+                            >
+                                <Search className="h-4 w-4" />
+                            </button>
+                            <button
+                                className="h-4 w-4 text-muted-foreground hover:scale-125 cursor-pointer "
+                                onClick={() => setShowCreateChannel(true)}
+                            >
+                                <Plus className="h-4 w-4" />
+                            </button>
+                        </div>
                     </div>
                     <div className="space-y-1">
                         {publicChannels.map((channel) => (
@@ -66,11 +85,11 @@ export default function ChannelSidebar({ channels, activeChannel, onSelectChanne
                         <div className="space-y-1">
                             {privateChannels.map((channel) => (
                                 <button key={channel.id} onClick={() => onSelectChannel(channel)}
-                                className={`channel-item w-full text-left ${activeChannel?.id === channel.id && "channel-item-active"}`}
-                            >
-                                <Hash className="h-4 w-4 text-muted-foreground" />
-                                <span className="truncate">{channel.name}</span>
-                            </button>
+                                    className={`channel-item w-full text-left ${activeChannel?.id === channel.id && "channel-item-active"}`}
+                                >
+                                    <Hash className="h-4 w-4 text-muted-foreground" />
+                                    <span className="truncate">{channel.name}</span>
+                                </button>
                             ))}
                         </div>
                     </div>
@@ -110,13 +129,13 @@ export default function ChannelSidebar({ channels, activeChannel, onSelectChanne
                     <div className="relative">
                         <div className="h-8 w-8 relative flex shrink-0 overflow-hidden rounded-full">
                             <div className="bg-primary text-primary-foreground flex h-full w-full items-center justify-center rounded-full">
-                                { 'U'}
+                                {'U'}
                             </div>
                         </div>
                         <div className="absolute -bottom-0.5 -right-0.5 presence-dot presence-online" />
                     </div>
                     <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">tester</p>
+                        <p className="text-sm font-medium truncate">{username}</p>
                         <p className="text-xs text-muted-foreground">Online</p>
                     </div>
                     <button
@@ -132,6 +151,11 @@ export default function ChannelSidebar({ channels, activeChannel, onSelectChanne
                 open={showCreateChannel}
                 onOpenChange={setShowCreateChannel}
                 onCreateChannel={oncreateChannel}
+            />
+            <ChannelList
+                open={showChannelList}
+                onOpenChange={setShowChannelList}
+                joinedChannels={channels}
             />
         </div>
     )

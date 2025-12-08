@@ -8,40 +8,6 @@ export default function ChatArea({ channel }) {
     const [messages, setMessages] = useState([]);
     const [profiles, setProfiles] = useState({});
     const [showMembers, setShowMembers] = useState(false);
-    
-
-    // Mock current user
-    const currentUser = { id: 'user1', username: 'johndoe' };
-
-    useEffect(() => {
-        if (channel?.name === 'channel2') {
-            // 1. Define mock profiles for the users in this chat
-            const mockProfiles = {
-                'user1': { username: 'johndoe', status: 'online' },
-                'user2': { username: 'johndoe2', status: 'online' }
-            };
-            setProfiles(mockProfiles);
-
-            // 2. Set messages with 'created_at' (ISO string) and 'user_id'
-            setMessages([
-                { 
-                    id: 1, 
-                    content: 'heelo', 
-                    user_id: 'user1', // Matches currentUser.id (isOwn = true)
-                    created_at: new Date('2025-12-03T14:48:00').toISOString(),
-                },
-                { 
-                    id: 2, 
-                    content: 'hello', 
-                    user_id: 'user2', // Different ID (isOwn = false)
-                    created_at: new Date('2025-12-03T15:06:00').toISOString(),
-                }
-            ]);
-        } else {
-            setMessages([]);
-        }
-    }, [channel]);
-
     const handleSendMessage = (text) => {
         const newMessage = {
             id: messages.length + 1,
@@ -49,9 +15,7 @@ export default function ChatArea({ channel }) {
             user_id: currentUser.id,
             created_at: new Date().toISOString(),
         };
-        setMessages([...messages, newMessage]);
-    };
-
+    }
     if (!channel) {
         return (
             <div className="flex-1 flex items-center justify-center bg-background">
@@ -88,7 +52,6 @@ export default function ChatArea({ channel }) {
                         onClick={() => setShowMembers(true)}
                     >
                         <Users className="h-4 w-4 mr-2" />
-                        <span>2</span>
                     </button>
                 </div>
             </div>
@@ -97,7 +60,6 @@ export default function ChatArea({ channel }) {
             <MessageList
                 messages={messages}
                 profiles={profiles}
-                user={currentUser} 
             />
 
             {/* Message Input */}
